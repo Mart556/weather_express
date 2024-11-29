@@ -1,19 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
 
     <link href="/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/open-weather-icons@0.0.8/dist/css/open-weather-icons.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
 <body>
 
     <div class="container-fluid d-flex align-items-center justify-content-center min-vh-100">
         <div class="row justify-content-center w-100">
             <div class="col-md-6 text-center text-white">
-                <div class="main-container p-4 bg-dark rounded">
+                <div id='main-container' class="p-4 bg-dark rounded">
                     <div class="row">
                         <div class="col-md-12">
                             <h1 class="h1 m-0">Weather App</h1>
@@ -22,21 +36,101 @@
                         </div>
 
                         <div class="col-md-4 text-start">
-                            <h2><i class="fa-solid fa-city me-3"></i>Tartu</h2>
+                            <h2 id="weather-city" class="m-0"><i class="fa-solid fa-city me-3"></i>
+                                <%= weatherData.city %>
+                            </h2>
                         </div>
 
                         <div class="col-md-4 text-center">
-                            <h2><i class="fa-solid fa-cloud me-3"></i>Pilvine</h2>
+                            <h2 id="weather-type" class="m-0"><i class="owi owi-<%= weatherData.icon %> me-2"></i>
+                                <%= weatherData.type %>
+                            </h2>
                         </div>
 
                         <div class="col-md-4 text-end">
-                            <h2><i class="fa-solid fa-temperature me-3"></i>2C</h2>
+                            <h2 id="weather-temp" class="m-0"><i class="fa-solid fa-temperature me-3"></i>
+                                <%= weatherData.temp %>°C
+                            </h2>
+                        </div>
+
+                        <div class="col-md-12">
+                            <hr style="color: white;">
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="input-group h-100">
+                                <input type="text" id="weather-city-input" class="form-control" placeholder="Linn"
+                                    aria-label="Linn" aria-describedby="weather-city-text">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 text-center">
+                            <button class="btn btn-success w-50 p-2" onclick="requestNewWeather()"><i
+                                    class="fa-solid fa-magnifying-glass fa-xl"></i> Otsi</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-container" class="p-4 bg-dark rounded hidden">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div id="error p-3 bg-danger text-white text-center">
+                                <h2 id="error-msg"></h2>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 text-center">
+                            <button class="btn btn-danger p-2" onclick="tryAgain()">Proovi uuesti!</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src=" https://cdn.jsdelivr.net/npm/open-weather-icons@0.0.8/index.min.js "></script>
     <script src="/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+<script>
+
+    function showError(errorMsg) {
+        document.getElementById('main-container').classList.add('hidden')
+
+        document.getElementById('error-msg').textContent = errorMsg
+        document.getElementById('error-container').classList.remove('hidden')
+    }
+
+    function requestNewWeather() {
+        const cityName = document.getElementById('weather-city-input').value
+        console.log('Requesting data for ', cityName)
+
+        fetch(`/requestWeather?city=${cityName}`)
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.error) return showError(data.error)
+
+                document.getElementById('weather-city').innerHTML = `
+            <i class="fa-solid fa-city me-3"></i> ${data.city}`
+                document.getElementById('weather-type').innerHTML = `
+            <i id="weather-icon" class="owi owi-${data.icon} me-2"></i> ${data.type}`
+                document.getElementById('weather-temp').innerHTML = `
+            <i class="fa-solid fa-temperature me-3"></i> ${data.temp} °C`
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+
+                showError(error)
+            });
+    }
+
+    function tryAgain() {
+
+        document.getElementById('error-container').classList.add('hidden')
+
+        document.getElementById('error-msg').textContent = ''
+        document.getElementById('main-container').classList.remove('hidden')
+    }
+</script>
+
 </html>
