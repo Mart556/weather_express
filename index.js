@@ -14,24 +14,19 @@ async function getWeatherData(cityName) {
     cityName = cityName.toLowerCase()
 
     try {
-        const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName},EE&appid=${apiKey}&units=metric`;
-        const response = await fetch(url);
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName},EE&appid=${apiKey}&units=metric`);
     
-        // Check if the response was successful (status code 200)
         if (!response.ok) {
           throw new Error(`Error fetching weather data: ${response.statusText}`);
         }
     
-        // Parse the response as JSON
         const data = await response.json();
     
-        // Extract and log relevant weather data
         const { main, weather, name } = data;
-        console.log(`Weather in`, weather);
         
         const weatherData = {
             city: name,
-            temp: main.temp,
+            temp: Number(main.temp).toFixed(0),
             type: weather[0].main,
             icon: weather[0].icon
         }
@@ -51,11 +46,11 @@ app.get('/', async (req, res) => {
 app.get('/requestWeather', async (req, res) => {
     const cityName = req.query.city;
 
-    if (cityName === '') return;
+    if (cityName === '') return res.status(500).json({ error: 'Linna nimi ei saa olla tyhi!' });
 
     const weatherData = await getWeatherData(cityName)
     if (weatherData === undefined) return res.status(500).json({ error: 'Ei saanud ilma infot!' })
-        
+
     res.json(weatherData);
 });
 
